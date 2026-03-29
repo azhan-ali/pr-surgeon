@@ -1,0 +1,21 @@
+{
+  "name": "pr-surgeon",
+  "version": "1.0.0",
+  "description": "CLI tool to extract git diff and log insights for a PR",
+  "main": "index.js",
+  "bin": {
+    "pr-surgeon": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "git",
+    "cli"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^4.1.2"
+  }
+}
