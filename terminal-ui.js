@@ -141,6 +141,26 @@ function renderUI(data) {
             console.log(chalk.gray('  No files to analyze for risks.'));
         }
         console.log('');
+
+        // ----------------- ARCHITECTURE DIAGNOSIS -----------------
+        if (data.analyzerDetails) {
+            console.log(chalk.bold(' 🏛️  ARCHITECTURE DIAGNOSIS'));
+            console.log(chalk.gray(' ────────────────────────────────────────────────────────────'));
+            
+            if (data.analyzerDetails.message) {
+                console.log(`  ${chalk.gray.italic(data.analyzerDetails.message)}`);
+            } else if (data.analyzerDetails.godFiles && data.analyzerDetails.godFiles.length > 0) {
+                for (const g of data.analyzerDetails.godFiles) {
+                    console.log(`  🚨 ${chalk.bold.red(g.file)} ${chalk.red(`(${g.touchFrequency} Churn)`)}`);
+                    console.log(`     ${chalk.yellow('Diagnosis:')} ${chalk.white(g.diagnosis)}`);
+                    console.log(`     ${chalk.cyan('Treatment:')} ${chalk.gray(g.suggestion)}`);
+                    console.log('');
+                }
+            } else {
+                console.log(`  ${chalk.green('✅ Stable architecture. No God Files detected in this PR.')}`);
+            }
+            console.log('');
+        }
     } catch (err) {
         console.log("⚠️  [Terminal UI] unavailable — skipping");
     }

@@ -2,6 +2,7 @@
 
 const { execSync } = require('child_process');
 const calculateRisk = require('./risk-scorer');
+const { analyzeHistory } = require('./git-analyzer');
 
 function runCommand(command) {
     try {
@@ -105,12 +106,18 @@ function scan() {
             risks = calculateRisk(diffData.files);
         } catch(e) { console.log("⚠️  [Risk Scorer] unavailable — skipping"); }
 
+        let godFilesData = { godFiles: [] };
+        try {
+            godFilesData = analyzeHistory(diffData.files);
+        } catch(e) { console.log("⚠️  [Git Analyzer] unavailable — skipping"); }
+
         const result = {
             filesChanged: diffData.filesChanged,
             linesAdded: diffData.linesAdded,
             linesRemoved: diffData.linesRemoved,
             commits: commits,
-            risks: risks
+            risks: risks,
+            analyzerDetails: godFilesData
         };
 
         try {
