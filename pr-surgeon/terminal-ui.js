@@ -52,7 +52,28 @@ function renderUI(data) {
         console.log(`  📂 Files Changed : ${changesStr}`);
         console.log(`  📈 Lines Added   : ${addedStr}`);
         console.log(`  📉 Lines Removed : ${removedStr}`);
-        console.log('');
+        console.log('');        // ----------------- RECENT COMMITS -----------------
+        if (data.commits && data.commits.length > 0) {
+            console.log(chalk.bold(' 📝 RECENT COMMITS'));
+            console.log(chalk.gray(' ─────────────────────────────────────'));
+            
+            const displayCommits = data.commits.slice(0, 5); 
+            for (const commit of displayCommits) {
+                const parts = commit.split(' ');
+                if(parts.length >= 2) {
+                    const hash = parts.shift();
+                    const msg = parts.join(' ');
+                    console.log(`  ${chalk.hex('#0EA5E9')(hash)} ${chalk.white(msg)}`);
+                } else {
+                    console.log(`  ${chalk.white(commit)}`);
+                }
+            }
+            
+            if (data.commits.length > 5) {
+                console.log(`  ${chalk.gray.italic(`...and ${data.commits.length - 5} more commits evaluated.`)}`);
+            }
+            console.log('');
+        }
 
         // ----------------- HEATMAP -----------------
         if (data.risks && data.risks.length > 0) {
