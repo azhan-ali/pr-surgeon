@@ -111,7 +111,7 @@ function predictMergeTime(totalLinesAdded, totalLinesRemoved, splitGroups) {
             savedPercent: savedPercent > 0 ? savedPercent : 0
         };
     } catch(err) {
-        return { status: 'insufficient', message: 'Not enough history for prediction' };
+        return { status: 'insufficient', message: '⚠️  [Predictor] — Failed to compute merge timelines. Estimation aborted.' };
     }
 }
 

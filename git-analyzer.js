@@ -91,7 +91,7 @@ function analyzeHistory(diffFiles, risks = []) {
         return { godFiles, reviewers };
 
     } catch (err) {
-        return { godFiles: [], reviewers: {} };
+        return { godFiles: [], reviewers: {}, message: "⚠️  [Git Analyzer] — Failed to scan structural history. Profiling aborted." };
     }
 }
 

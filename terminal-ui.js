@@ -172,7 +172,9 @@ function renderUI(data) {
             console.log(chalk.gray(' ────────────────────────────────────────────────────────────'));
             
             if (data.splitStrategy.status === 'skipped') {
-                console.log(`  ${chalk.green(data.splitStrategy.message || "PR size looks good 👍")}`);
+                const msg = data.splitStrategy.message || "PR size looks good 👍";
+                const colorFn = msg.includes('⚠️') ? chalk.yellow : chalk.green;
+                console.log(`  ${colorFn(msg)}`);
             } else if (data.splitStrategy.suggestedPRs && data.splitStrategy.suggestedPRs.length > 0) {
                 if (data.splitStrategy.suggestedPRs.length === 1) {
                     console.log(`  ${chalk.green("PR size is optimally chunked as 1 discrete unit 👍")}`);
@@ -212,7 +214,7 @@ function renderUI(data) {
             console.log('');
         }
     } catch (err) {
-        console.log("⚠️  [Terminal UI] unavailable — skipping");
+        console.log("⚠️  [Terminal UI] — Failed to render statistics safely. Display aborted.");
     }
 }
 

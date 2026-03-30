@@ -1,10 +1,10 @@
 {
   "name": "pr-surgeon",
   "version": "1.0.0",
-  "description": "CLI tool to extract git diff and log insights for a PR",
+  "description": "Code Review X-Ray — diagnose why your PRs are too big",
   "main": "index.js",
   "bin": {
-    "pr-surgeon": "./index.js"
+    "pr-surgeon": "./cli/index.js"
   },
   "scripts": {
     "start": "node index.js"
@@ -14,7 +14,7 @@
     "cli"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "chalk": "^4.1.2"
   }

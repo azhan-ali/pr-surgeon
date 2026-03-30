@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 const { execSync } = require('child_process');
-const calculateRisk = require('./risk-scorer');
-const { analyzeHistory } = require('./git-analyzer');
-const { splitPR } = require('./split-engine');
-const { predictMergeTime } = require('./predictor');
+const calculateRisk = require('../risk-scorer');
+const { analyzeHistory } = require('../git-analyzer');
+const { splitPR } = require('../split-engine');
+const { predictMergeTime } = require('../predictor');
 
 function runCommand(command) {
     try {
@@ -37,7 +37,7 @@ function getCommitData() {
         
         return logOutput.trim().split('\n').filter(line => line.length > 0);
     } catch(err) {
-        console.log("⚠️  [Commit Data] unavailable — skipping");
+        console.log("⚠️  [Commit Data] — Unable to fetch recent commits. Skipping.");
         return [];
     }
 }
@@ -95,34 +95,34 @@ function scan() {
         if (hasHead1) {
             try {
                 diffData = getDiffData();
-            } catch(e) { console.log("⚠️  [Git Diff] unavailable — skipping"); }
+            } catch(e) { console.log("⚠️  [Git Diff] — Unable to parse git diff stats. Skipping."); }
         }
         
         let commits = [];
         try {
             commits = getCommitData();
-        } catch(e) { console.log("⚠️  [Commit Data] unavailable — skipping"); }
+        } catch(e) { console.log("⚠️  [Commit Data] — Unable to fetch commit history. Skipping."); }
         
         let risks = [];
         try {
             risks = calculateRisk(diffData.files);
-        } catch(e) { console.log("⚠️  [Risk Scorer] unavailable — skipping"); }
+        } catch(e) { console.log("⚠️  [Risk Scorer] — Failed to calculate file risk scores. Skipping."); }
 
         let godFilesData = { godFiles: [], reviewers: {} };
         try {
             godFilesData = analyzeHistory(diffData.files, risks);
-        } catch(e) { console.log("⚠️  [Git Analyzer] unavailable — skipping"); }
+        } catch(e) { console.log("⚠️  [Git Analyzer] — Failed to extract architectural insights. Skipping."); }
         
         let splitStrategy = { status: 'skipped', message: "Split Engine skipped" };
         try {
             splitStrategy = splitPR(diffData.files, risks);
-        } catch(e) { console.log("⚠️  [Split Engine] unavailable — skipping"); }
+        } catch(e) { console.log("⚠️  [Split Engine] — Failed to calculate optimal PR splits. Skipping."); }
 
         let predictorDetails = { status: 'insufficient', message: "Not enough history for prediction." };
         try {
              const groups = splitStrategy && splitStrategy.suggestedPRs ? splitStrategy.suggestedPRs : [];
              predictorDetails = predictMergeTime(diffData.linesAdded, diffData.linesRemoved, groups);
-        } catch(e) { console.log("⚠️  [Predictor] unavailable — skipping"); }
+        } catch(e) { console.log("⚠️  [Predictor] — Failed to estimate PR merge time. Skipping."); }
 
         const result = {
             filesChanged: diffData.filesChanged,
@@ -136,23 +136,23 @@ function scan() {
         };
 
         try {
-            const { renderUI } = require('./terminal-ui');
+            const { renderUI } = require('../terminal-ui');
             renderUI(result);
         } catch(e) {
-            console.log("⚠️  [Terminal UI] unavailable — skipping");
+            console.log("⚠️  [Terminal UI] — Failed to render the dashboard interface. Exiting.");
         }
     } catch (err) {
-        console.log("⚠️  [Scanner] unavailable — skipping");
+        console.log("⚠️  [Scanner] — Encountered a critical scanning error. Aborting gracefully.");
     }
 }
 
 // Ensure no raw stack traces ever bubble up to the user natively
 process.on('uncaughtException', (err) => {
-    console.log("⚠️  [System] unavailable — skipping");
+    console.log("⚠️  [System] — An unexpected fatal error occurred. Shielding stack trace and exiting.");
     process.exit(0);
 });
 process.on('unhandledRejection', (reason, promise) => {
-    console.log("⚠️  [System] unavailable — skipping");
+    console.log("⚠️  [System] — An unexpected asynchronous error occurred. Shielding stack trace and exiting.");
     process.exit(0);
 });
 

@@ -76,7 +76,7 @@ function calculateRisk(diffFiles) {
 
         return results;
     } catch (err) {
-        return []; // ALL errors caught, return empty array on failure — never throw to user
+        throw err;
     }
 }
 

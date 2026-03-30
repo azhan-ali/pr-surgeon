@@ -59,7 +59,8 @@ function buildDependencyGroups(filesData) {
 function splitPR(diffFiles, risks) {
     try {
         if (!diffFiles || diffFiles.length === 0) return { status: 'skipped', message: "No files to split" };
-        if (diffFiles.length <= 2) return { status: 'skipped', message: "PR size looks good 👍" };
+        if (diffFiles.length === 1) return { status: 'skipped', message: "PR looks healthy" };
+        if (diffFiles.length === 2) return { status: 'skipped', message: "PR size looks good 👍" };
         
         const metricsMap = {};
         for (const fileObj of diffFiles) {
@@ -140,7 +141,7 @@ function splitPR(diffFiles, risks) {
         return { status: 'success', suggestedPRs };
 
     } catch(err) {
-        return { status: 'skipped', message: "Split Engine unavailable" };
+        return { status: 'skipped', message: "⚠️  [Split Engine] — Error resolving code dependencies. Split preview aborted." };
     }
 }
 
