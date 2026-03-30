@@ -122,6 +122,10 @@ function renderUI(data) {
                 const levelStr = colorFn(levelDisplay);
                 
                 console.log(`  ${fileStr}   ${coloredBarStr}   ${scoreStr}   ${levelStr}`);
+                
+                if (data.analyzerDetails && data.analyzerDetails.reviewers && data.analyzerDetails.reviewers[r.file]) {
+                    console.log(`      ↳ ${chalk.cyan(data.analyzerDetails.reviewers[r.file])}`);
+                }
             }
             console.log('  ' + chalk.gray('────────────────────────────────────────────────────────────'));
             
@@ -158,6 +162,52 @@ function renderUI(data) {
                 }
             } else {
                 console.log(`  ${chalk.green('✅ Stable architecture. No God Files detected in this PR.')}`);
+            }
+            console.log('');
+        }
+
+        // ----------------- SPLIT STRATEGY -----------------
+        if (data.splitStrategy) {
+            console.log(chalk.bold(' ✂️  PR SPLIT STRATEGY'));
+            console.log(chalk.gray(' ────────────────────────────────────────────────────────────'));
+            
+            if (data.splitStrategy.status === 'skipped') {
+                console.log(`  ${chalk.green(data.splitStrategy.message || "PR size looks good 👍")}`);
+            } else if (data.splitStrategy.suggestedPRs && data.splitStrategy.suggestedPRs.length > 0) {
+                if (data.splitStrategy.suggestedPRs.length === 1) {
+                    console.log(`  ${chalk.green("PR size is optimally chunked as 1 discrete unit 👍")}`);
+                } else {
+                    console.log(`  ${chalk.yellow(`Recommended dividing into ${chalk.bold(data.splitStrategy.suggestedPRs.length)} targeted PRs:`)}`);
+                    console.log('');
+                    
+                    for (const pr of data.splitStrategy.suggestedPRs) {
+                        let riskColor = chalk.green;
+                        if (pr.riskScore >= 75) riskColor = chalk.magenta;
+                        else if (pr.riskScore >= 50) riskColor = chalk.red;
+                        else if (pr.riskScore >= 25) riskColor = chalk.yellow;
+                        
+                        console.log(`  📦 ${chalk.bold.white(`PR #${pr.prNumber}: ${pr.title}`)}`);
+                        console.log(`     ${chalk.gray('Files:')} ${chalk.cyan(pr.files.join(', '))}`);
+                        console.log(`     ${chalk.gray('Avg Risk:')} ${riskColor(pr.riskScore)}  |  ${chalk.gray('ETA:')} ${chalk.bold(pr.estimatedReviewTime)} min`);
+                        console.log('');
+                    }
+                }
+            }
+            console.log('');
+        }
+
+        // ----------------- PREDICTOR -----------------
+        if (data.predictorDetails) {
+            console.log(chalk.bold(' 🔮 MERGE TIME PREDICTOR'));
+            console.log(chalk.gray(' ────────────────────────────────────────────────────────────'));
+            
+            if (data.predictorDetails.status === 'insufficient') {
+                console.log(`  ${chalk.gray.italic(data.predictorDetails.message || "Not enough history for prediction")}`);
+            } else if (data.predictorDetails.status === 'success') {
+                const cur = chalk.red(`~${data.predictorDetails.currentDays} days`);
+                const aft = chalk.green(`~${data.predictorDetails.afterSplitDays} days`);
+                const save = chalk.bold.cyan(`${data.predictorDetails.savedPercent}%`);
+                console.log(`  ${chalk.white('Current PR:')} ${cur}  |  ${chalk.white('After split:')} ${aft}  |  ${chalk.white('You save:')} ${save}`);
             }
             console.log('');
         }

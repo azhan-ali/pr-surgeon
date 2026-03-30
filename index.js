@@ -3,6 +3,8 @@
 const { execSync } = require('child_process');
 const calculateRisk = require('./risk-scorer');
 const { analyzeHistory } = require('./git-analyzer');
+const { splitPR } = require('./split-engine');
+const { predictMergeTime } = require('./predictor');
 
 function runCommand(command) {
     try {
@@ -106,10 +108,21 @@ function scan() {
             risks = calculateRisk(diffData.files);
         } catch(e) { console.log("⚠️  [Risk Scorer] unavailable — skipping"); }
 
-        let godFilesData = { godFiles: [] };
+        let godFilesData = { godFiles: [], reviewers: {} };
         try {
-            godFilesData = analyzeHistory(diffData.files);
+            godFilesData = analyzeHistory(diffData.files, risks);
         } catch(e) { console.log("⚠️  [Git Analyzer] unavailable — skipping"); }
+        
+        let splitStrategy = { status: 'skipped', message: "Split Engine skipped" };
+        try {
+            splitStrategy = splitPR(diffData.files, risks);
+        } catch(e) { console.log("⚠️  [Split Engine] unavailable — skipping"); }
+
+        let predictorDetails = { status: 'insufficient', message: "Not enough history for prediction." };
+        try {
+             const groups = splitStrategy && splitStrategy.suggestedPRs ? splitStrategy.suggestedPRs : [];
+             predictorDetails = predictMergeTime(diffData.linesAdded, diffData.linesRemoved, groups);
+        } catch(e) { console.log("⚠️  [Predictor] unavailable — skipping"); }
 
         const result = {
             filesChanged: diffData.filesChanged,
@@ -117,7 +130,9 @@ function scan() {
             linesRemoved: diffData.linesRemoved,
             commits: commits,
             risks: risks,
-            analyzerDetails: godFilesData
+            analyzerDetails: godFilesData,
+            splitStrategy: splitStrategy,
+            predictorDetails: predictorDetails
         };
 
         try {
